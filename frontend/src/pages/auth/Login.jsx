@@ -20,7 +20,14 @@ function Login({ setAuth }) {
       const response = await authAPI.login(data);
       localStorage.setItem("token", response.data.data.token);
       setAuth(true);
-      navigate("/onboarding/website");
+
+      // Check if user has completed onboarding (has businesses)
+      const businessCount = response.data.data.businessCount || 0;
+      if (businessCount > 0) {
+        navigate("/dashboard");
+      } else {
+        navigate("/onboarding/website");
+      }
     } catch (error) {
       setApiError(error.response?.data?.message || "Login failed");
     } finally {
