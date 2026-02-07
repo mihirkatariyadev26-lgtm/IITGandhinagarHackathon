@@ -1,0 +1,17 @@
+export const SURPRISE_PROMPTS = [
+  "A futuristic cyberpunk city with neon rain and flying cars, cinematic lighting, 8k resolution",
+  "A serene zen garden on Mars, red dust contrasting with green bonsai trees, glass dome, soft sunlight",
+  "A steampunk mechanical dragon made of brass and gears, breathing steam, intricate details",
+  "Portrait of a biorobotic woman with glowing circuitry under skin, ethereal atmosphere, bokeh background",
+  "An underwater city of Atlantis, bioluminescent coral reefs, ancient ruins, divers exploring",
+  "A isometric view of a magical library inside a giant hollow tree, tiny glowing fairies, cozy atmosphere",
+  "A synthwave landscape with a retro sun, grid mountains, purple and orange gradient sky",
+  "A hyper-realistic close-up of a human eye reflecting a galaxy, macro photography",
+  "A floating island in the sky with waterfalls cascading into clouds, fantasy style",
+  "A cute robot gardening in a post-apocalyptic world, hopeful mood, vibrant flowers",
+  "A dark fantasy knight facing a giant shadow monster, epic scale, dramatic lighting",
+  "A futuristic space station orbiting a blue planet, intricate mechanical details, volumetric lighting",
+  "A watercolor painting of a rainy street in Paris, reflection in puddles, soft colors",
+  "A low poly 3D render of a camping trip in the mountains, night sky with stars, campfire",
+  "A majestic lion made of fire and smoke, dynamic pose, dark background",
+];
