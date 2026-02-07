@@ -1,12 +1,12 @@
 const Business = require("../models/Business");
-const { OpenAI } = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const WebsiteAnalyzer = require("../services/ai/websiteAnalyzer");
 
-// Initialize OpenAI if API key is available
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+// Initialize Gemini
+const genAI = process.env.GEMINI_API_KEY
+  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null;
-const websiteAnalyzer = new WebsiteAnalyzer(openai);
+const websiteAnalyzer = new WebsiteAnalyzer(genAI);
 
 // @desc    Analyze a website and create business profile
 // @route   POST /api/business/analyze

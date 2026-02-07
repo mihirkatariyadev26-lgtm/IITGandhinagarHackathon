@@ -1,31 +1,27 @@
 class CaptionGenerator {
-  constructor(openai) {
-    this.openai = openai;
+  constructor(genAI) {
+    this.genAI = genAI;
   }
 
   async generateCaption(prompt, brandProfile, platform = "instagram") {
-    if (!this.openai) {
+    if (!this.genAI) {
       // Return a simple caption if no API key
       return this.generateSimpleCaption(prompt, platform);
     }
 
     try {
+      const model = this.genAI.getGenerativeModel({
+        model: "gemini-2.0-flash",
+      });
       const systemPrompt = this.buildSystemPrompt(brandProfile, platform);
 
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: `Generate a ${platform} caption for: ${prompt}. Include relevant hashtags at the end.`,
-          },
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-      });
+      const result = await model.generateContent([
+        systemPrompt,
+        `Generate a ${platform} caption for: ${prompt}. Include relevant hashtags at the end.`,
+      ]);
 
-      const fullText = response.choices[0].message.content;
+      const response = await result.response;
+      const fullText = response.text();
 
       // Split caption and hashtags
       const hashtags = this.extractHashtags(fullText);
@@ -90,6 +86,7 @@ Focus on ${platform === "linkedin" ? "professional value" : "engagement and emot
       caption,
       hashtags,
       characterCount: caption.length,
+      hashtags,
     };
   }
 }

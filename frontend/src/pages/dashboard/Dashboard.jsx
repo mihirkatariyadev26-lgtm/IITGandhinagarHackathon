@@ -1,11 +1,12 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-function Dashboard() {
+function Dashboard({ setAuth }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    setAuth(false);
     navigate("/login");
   };
 

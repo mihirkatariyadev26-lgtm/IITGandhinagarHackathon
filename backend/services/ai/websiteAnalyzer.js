@@ -3,8 +3,8 @@ const cheerio = require("cheerio");
 const sharp = require("sharp");
 
 class WebsiteAnalyzer {
-  constructor(openai) {
-    this.openai = openai;
+  constructor(genAI) {
+    this.genAI = genAI;
   }
 
   async analyzeWebsite(url) {
@@ -18,7 +18,7 @@ class WebsiteAnalyzer {
       // Step 3: Extract colors from screenshot
       const colorPalette = await this.extractColors(screenshot);
 
-      // Step 4: Use GPT-4 Vision to analyze brand (if OpenAI API key is available)
+      // Step 4: Use Gemini Vision to analyze brand
       let brandAnalysis = {
         businessType: "general",
         brandTone: "professional",
@@ -27,7 +27,7 @@ class WebsiteAnalyzer {
         keywords: [],
       };
 
-      if (this.openai) {
+      if (this.genAI) {
         try {
           brandAnalysis = await this.analyzeBrandWithAI(
             screenshot,
@@ -56,7 +56,7 @@ class WebsiteAnalyzer {
   async captureScreenshot(url) {
     let browser;
     try {
-      Browser = await puppeteer.launch({
+      browser = await puppeteer.launch({
         headless: "new",
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
       });
@@ -129,36 +129,38 @@ class WebsiteAnalyzer {
   }
 
   async analyzeBrandWithAI(screenshot, htmlContent) {
-    if (!this.openai) {
-      throw new Error("OpenAI client not configured");
+    if (!this.genAI) {
+      throw new Error("Gemini AI client not configured");
     }
 
     const base64Image = screenshot.toString("base64");
+    const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `Analyze this business website and provide a JSON response with:\n1. businessType (e.g., cafe, tech startup, retail store, ngo)\n2. brandTone (formal, casual, youthful, professional, or friendly)\n3. targetAudience (describe the target demographic)\n4. services (array of up to 5 key services/products)\n5. keywords (array of 5-7 descriptive brand keywords)\n\nWebsite content: ${JSON.stringify(htmlContent)}\n\nRespond ONLY with valid JSON, no other text.`,
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/png;base64,${base64Image}`,
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: 1000,
-    });
+    const prompt = `Analyze this business website and provide a JSON response with:
+1. businessType (e.g., cafe, tech startup, retail store, ngo)
+2. brandTone (formal, casual, youthful, professional, or friendly)
+3. targetAudience (describe the target demographic)
+4. services (array of up to 5 key services/products)
+5. keywords (array of 5-7 descriptive brand keywords)
 
-    const content = response.choices[0].message.content;
-    return JSON.parse(content);
+Website content: ${JSON.stringify(htmlContent)}
+
+Respond ONLY with valid JSON, no other text.`;
+
+    const imagePart = {
+      inlineData: {
+        data: base64Image,
+        mimeType: "image/png",
+      },
+    };
+
+    const result = await model.generateContent([prompt, imagePart]);
+    const response = await result.response;
+    const text = response.text();
+
+    // Clean up response if it contains markdown code blocks
+    const jsonStr = text.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(jsonStr);
   }
 }
 

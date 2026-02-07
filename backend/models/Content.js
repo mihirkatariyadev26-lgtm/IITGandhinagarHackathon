@@ -19,7 +19,14 @@ const contentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["draft", "generating", "scheduled", "published", "failed"],
+      enum: [
+        "draft",
+        "generating",
+        "scheduled",
+        "publishing",
+        "published",
+        "failed",
+      ],
       default: "draft",
     },
     mediaUrl: String,

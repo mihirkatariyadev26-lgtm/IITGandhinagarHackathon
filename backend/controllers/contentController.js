@@ -1,22 +1,25 @@
 const Content = require("../models/Content");
 const Business = require("../models/Business");
-const { OpenAI } = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const ContentGenerator = require("../services/ai/contentGenerator");
 const CaptionGenerator = require("../services/ai/captionGenerator");
 const storageService = require("../services/storage/storageService");
 
-// Initialize OpenAI and generators
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+// Initialize Gemini and generators
+const genAI = process.env.GEMINI_API_KEY
+  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null;
-const contentGenerator = new ContentGenerator(openai);
-const captionGenerator = new CaptionGenerator(openai);
+// ContentGenerator still uses mock/null for images as Gemini image gen is not standard here
+const contentGenerator = new ContentGenerator(null);
+const captionGenerator = new CaptionGenerator(genAI);
+const websiteAnalyzer = new WebsiteAnalyzer(genAI);
 
 // @desc    Generate content (image + caption)
 // @route    POST /api/content/generate
 // @access  Private
 exports.generateContent = async (req, res) => {
   try {
+    console.log("Generating content request received");
     const { businessId, prompt, platforms, contentType = "image" } = req.body;
     const userId = req.user._id;
 
@@ -53,20 +56,31 @@ exports.generateContent = async (req, res) => {
       // Generate image
       let mediaUrl = null;
       let imageMetadata = {};
+      let usedMock = false;
 
       if (openai) {
-        const imageResult = await contentGenerator.generateImage(
-          prompt,
-          business.brandProfile,
-        );
-        // Upload to storage
-        mediaUrl = await storageService.uploadImage(
-          imageResult.imageBuffer,
-          `${content._id}.png`,
-        );
-        imageMetadata = imageResult.metadata;
-      } else {
-        // Use mock generation if no API key
+        try {
+          const imageResult = await contentGenerator.generateImage(
+            prompt,
+            business.brandProfile,
+          );
+          // Upload to storage
+          mediaUrl = await storageService.uploadImage(
+            imageResult.imageBuffer,
+            `${content._id}.png`,
+          );
+          imageMetadata = imageResult.metadata;
+        } catch (err) {
+          console.warn(
+            "OpenAI generation failed, falling back to mock:",
+            err.message,
+          );
+          usedMock = true;
+        }
+      }
+
+      if (!openai || usedMock) {
+        // Use mock generation if no API key or if generation failed
         const mockResult = await contentGenerator.generateMockImage();
         mediaUrl = await storageService.uploadImage(
           mockResult.imageBuffer,
@@ -107,6 +121,7 @@ exports.generateContent = async (req, res) => {
         },
       });
     } catch (generationError) {
+      console.error("Inner generation error:", generationError);
       content.status = "failed";
       content.error = generationError.message;
       await content.save();
