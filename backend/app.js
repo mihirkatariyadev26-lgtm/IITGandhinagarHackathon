@@ -7,7 +7,18 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// Configure CORS to allow frontend access
+const corsOptions = {
+  origin: [
+    "https://autobrandaifrontend.onrender.com",
+    "http://localhost:5173", // For local development
+    "http://localhost:4173", // For local preview
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 if (!process.env.GEMINI_API_KEY) {
