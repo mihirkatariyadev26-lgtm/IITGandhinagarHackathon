@@ -11,11 +11,7 @@ class CaptionGenerator {
 
     try {
       const model = this.genAI.getGenerativeModel({
-<<<<<<< Updated upstream
-        model: "gemini-1.5-flash",
-=======
         model: "gemini-2.0-flash",
->>>>>>> Stashed changes
       });
       const systemPrompt = this.buildSystemPrompt(brandProfile, platform);
 

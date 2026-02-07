@@ -4,15 +4,20 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const ContentGenerator = require("../services/ai/contentGenerator");
 const CaptionGenerator = require("../services/ai/captionGenerator");
 const storageService = require("../services/storage/storageService");
+const OpenAI = require("openai");
+
+// Initialize OpenAI for image generation
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 // Initialize Gemini and generators
 const genAI = process.env.GEMINI_API_KEY
   ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
   : null;
-// ContentGenerator still uses mock/null for images as Gemini image gen is not standard here
-const contentGenerator = new ContentGenerator(null);
+// ContentGenerator uses OpenAI for image generation
+const contentGenerator = new ContentGenerator(openai);
 const captionGenerator = new CaptionGenerator(genAI);
-const websiteAnalyzer = new WebsiteAnalyzer(genAI);
 
 // @desc    Generate content (image + caption)
 // @route    POST /api/content/generate

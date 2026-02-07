@@ -134,11 +134,7 @@ class WebsiteAnalyzer {
     }
 
     const base64Image = screenshot.toString("base64");
-<<<<<<< Updated upstream
-    const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-=======
     const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
->>>>>>> Stashed changes
 
     const prompt = `Analyze this business website and provide a JSON response with:
 1. businessType (e.g., cafe, tech startup, retail store, ngo)
