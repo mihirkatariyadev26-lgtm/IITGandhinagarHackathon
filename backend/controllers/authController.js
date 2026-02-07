@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Business = require("../models/Business");
 const { generateToken } = require("../middleware/auth");
 
 // @desc    Register a new user
@@ -36,6 +37,7 @@ exports.register = async (req, res) => {
         name: user.name,
         token,
         expiresIn: "7d",
+        businessCount: 0,
       },
     });
   } catch (error) {
@@ -78,10 +80,14 @@ exports.login = async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
+    // Check if user has any businesses
+    const businessCount = await Business.countDocuments({ userId: user._id });
+
     res.status(200).json({
       success: true,
       data: {
         token,
+        businessCount,
         user: {
           id: user._id,
           email: user.email,
@@ -108,6 +114,8 @@ exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
 
+    const businessCount = await Business.countDocuments({ userId: user._id });
+
     res.status(200).json({
       success: true,
       data: {
@@ -116,6 +124,7 @@ exports.getMe = async (req, res) => {
         name: user.name,
         businessName: user.businessName,
         subscription: user.subscription,
+        businessCount,
       },
     });
   } catch (error) {
