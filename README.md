@@ -1,2 +1,1 @@
-kaaa pikina
-naavvvvvvvv
+
